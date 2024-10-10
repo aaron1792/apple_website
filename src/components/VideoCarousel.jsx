@@ -1,8 +1,11 @@
+import gsap from 'gsap';
+import { useGSAP } from '@gsap/react';
+import { ScrollTrigger } from 'gsap/all';
+gsap.registerPlugin(ScrollTrigger);
 import { useEffect, useRef, useState } from 'react';
 import { hightlightsSlides } from '../constants';
-import gsap from 'gsap';
+
 import { pauseImg, playImg, replayImg } from '../utils';
-import { useGSAP } from '@gsap/react';
 
 function VideoCarousel() {
   const videoRef = useRef([]);
@@ -43,18 +46,6 @@ function VideoCarousel() {
   }, [isEnd, videoId]);
 
   useEffect(() => {
-    if (loadedData.length > 3) {
-      if (!isPlaying) {
-        videoRef.current[videoId].pause();
-      } else {
-        startPlay && videoRef.current[videoId].play();
-      }
-    }
-  }, [startPlay, videoId, isPlaying, loadedData]);
-
-  const handleLoadedMetadata = (i, e) => setLoadedData((pre) => [...pre, e]);
-
-  useEffect(() => {
     let currentProgress = 0;
     let span = videoSpanRef.current;
     if (span[videoId]) {
@@ -82,16 +73,18 @@ function VideoCarousel() {
           }
         },
         onComplete: () => {
-          gsap.to(videoDivRef.current[videoId], {
-            width: '12px',
-          });
-          gsap.to(span[videoId], {
-            backgroundColor: '#afafaf',
-          });
+          if (isPlaying) {
+            gsap.to(videoDivRef.current[videoId], {
+              width: '12px',
+            });
+            gsap.to(span[videoId], {
+              backgroundColor: '#afafaf',
+            });
+          }
         },
       });
 
-      if (videoId === 0) {
+      if (videoId == 0) {
         anim.restart();
       }
       const animUpdate = () => {
@@ -107,6 +100,16 @@ function VideoCarousel() {
       }
     }
   }, [videoId, startPlay]);
+
+  useEffect(() => {
+    if (loadedData.length > 3) {
+      if (!isPlaying) {
+        videoRef.current[videoId].pause();
+      } else {
+        startPlay && videoRef.current[videoId].play();
+      }
+    }
+  }, [startPlay, videoId, isPlaying, loadedData]);
 
   const handleProcess = (type, i) => {
     switch (type) {
@@ -137,6 +140,8 @@ function VideoCarousel() {
         return video;
     }
   };
+
+  const handleLoadedMetadata = (i, e) => setLoadedData((pre) => [...pre, e]);
 
   return (
     <>
